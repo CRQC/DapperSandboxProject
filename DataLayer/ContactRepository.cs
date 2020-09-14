@@ -44,7 +44,7 @@ namespace DataLayer
 
         public void Remove(int id)
         {
-            throw new System.NotImplementedException();
+            this.db.Execute("DELETE FROM Contacts WHERE Id = @Id", new { id });
         }
 
         public void Save(Contact contact)
