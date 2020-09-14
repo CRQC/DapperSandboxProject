@@ -21,8 +21,25 @@ namespace Runner
             var id = Insert_should_assign_identity_to_new_entity();
             Find_should_retrieve_existing_entity(id);
             Modify_should_update_existing_entity(id);
+            Delete_should_remove_entity(id);
         }
 
+        static void Delete_should_remove_entity(int id)
+        {
+            // arrange
+            IContactRepository repository = CreateRepository();
+
+            // act
+            repository.Remove(id);
+
+            // create a new repository for verification purposes
+            IContactRepository repository2 = CreateRepository();
+            var deletedEntity = repository2.Find(id);
+
+            // assert
+            Debug.Assert(deletedEntity == null);
+            Console.WriteLine("*** Contact Deleted ***");
+        }
 
         static void Modify_should_update_existing_entity(int id)
         {
