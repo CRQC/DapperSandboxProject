@@ -38,10 +38,10 @@ namespace DataLayer
             return contacts.Distinct().ToList();
         }
 
-        //public List<Address> GetAddressesByState(int stateId)
-        //{
-        //    return this.db.Query<Address>("SELECT * FROM Addresses WHERE StateId = {=stateId}", new { stateId }).ToList();
-        //}
+        public List<Address> GetAddressesByState(int stateId)
+        {
+            return this.db.Query<Address>("SELECT * FROM Addresses WHERE StateId = {=stateId}", new { stateId }).ToList();
+        }
 
         public int BulkInsertContacts(List<Contact> contacts)
         {
