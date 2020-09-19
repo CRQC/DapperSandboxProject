@@ -1,8 +1,10 @@
 ﻿using DataLayer;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace Runner
 {
@@ -15,13 +17,52 @@ namespace Runner
 
             Initialize();
 
-            //Insert_should_assign_identity_to_new_entity();
             //Get_all_should_return_6_results();
 
-            var id = Insert_should_assign_identity_to_new_entity();
-            Find_should_retrieve_existing_entity(id);
-            Modify_should_update_existing_entity(id);
-            Delete_should_remove_entity(id);
+            //var id = Insert_should_assign_identity_to_new_entity();
+            //Find_should_retrieve_existing_entity(id);
+            //Modify_should_update_existing_entity(id);
+            //Delete_should_remove_entity(id);
+
+            //var repository = CreateRepository();
+            //var mj = repository.GetFullContact(1);
+            //mj.Output();
+
+            //Dynamic_support_should_produce_correct_results();
+            Bulk_insert_should_insert_4_rows();
+        }
+
+        /// <summary>
+        /// Dynamically calling object on dapper. 
+        /// </summary>
+        static void Dynamic_support_should_produce_correct_results()
+        {
+
+            var repository = CreateRepositoryEx();
+
+            var contacts = repository.GetDynamicContactsById(1, 2, 4);
+
+            Debug.Assert(contacts.Count == 3);
+            Console.WriteLine($"First FirstName is: { contacts.First().FirstName}");
+            contacts.Output();
+
+        }
+
+
+        static void List_support_should_produce_correct_results() {
+
+            var repository = CreateRepositoryEx();
+
+            var contacts = repository.GetContactsById(1, 2, 4);
+
+            Debug.Assert(contacts.Count == 3);
+            contacts.Output();
+
+        }
+
+        private static ContactRepositoryEx CreateRepositoryEx()
+        {
+            return new ContactRepositoryEx(config.GetConnectionString("DefaultConnection"));
         }
 
         static void Delete_should_remove_entity(int id)
@@ -47,23 +88,23 @@ namespace Runner
             IContactRepository repository = CreateRepository();
 
             // act
-            var contact = repository.Find(id);
-            //var contact = repository.GetFullContact(id);
+            //var contact = repository.Find(id);
+            var contact = repository.GetFullContact(id);
             contact.FirstName = "Bob";
-           // contact.Addresses[0].StreetAddress = "456 Main Street";
-            repository.Update(contact);
-            //repository.Save(contact);
+            contact.Addresses[0].StreetAddress = "456 Main Street";
+            //repository.Update(contact);
+            repository.Save(contact);
 
             // create a new repository for verification purposes
             IContactRepository repository2 = CreateRepository();
-            var modifiedContact = repository2.Find(id);
-            //var modifiedContact = repository2.GetFullContact(id);
+             // var modifiedContact = repository2.Find(id);
+            var modifiedContact = repository2.GetFullContact(id);
 
             // assert
             Console.WriteLine("*** Contact Modified ***");
             modifiedContact.Output();
             Debug.Assert(modifiedContact.FirstName == "Bob");
-            //Debug.Assert(modifiedContact.Addresses.First().StreetAddress == "456 Main Street");
+            Debug.Assert(modifiedContact.Addresses.First().StreetAddress == "456 Main Street");
         }
 
 
@@ -98,19 +139,19 @@ namespace Runner
                 Company = "Microsoft",
                 Title = "Developer"
             };
-            //var address = new Address
-            //{
-            //    AddressType = "Home",
-            //    StreetAddress = "123 Main Street",
-            //    City = "Baltimore",
-            //    StateId = 1,
-            //    PostalCode = "22222"
-            //};
-            //contact.Addresses.Add(address);
+            var address = new Address
+            {
+                AddressType = "Home",
+                StreetAddress = "123 Main Street",
+                City = "Baltimore",
+                StateId = 1,
+                PostalCode = "22222"
+            };
+            contact.Addresses.Add(address);
 
             // act
-            repository.Add(contact);
-            //repository.Save(contact);
+            //repository.Add(contact);
+            repository.Save(contact);
 
             // assert
             Debug.Assert(contact.Id != 0);
@@ -130,11 +171,29 @@ namespace Runner
 
             // assert
             Console.WriteLine($"Count: {contacts.Count}");
-            Debug.Assert(contacts.Count == 6);
+            //Debug.Assert(contacts.Count == 6);
             contacts.Output();
         }
 
+        static void Bulk_insert_should_insert_4_rows()
+        {
+            // arrange
+            var repository = CreateRepositoryEx();
+            var contacts = new List<Contact>
+            {
+                new Contact { FirstName = "Charles", LastName = "Barkley" },
+                new Contact { FirstName = "Scottie", LastName = "Pippen" },
+                new Contact { FirstName = "Tim", LastName = "Duncan" },
+                new Contact { FirstName = "Patrick", LastName = "Ewing" }
+            };
 
+            // act
+            var rowsAffected = repository.BulkInsertContacts(contacts);
+
+            // assert
+            Console.WriteLine($"Rows inserted: {rowsAffected}");
+            Debug.Assert(rowsAffected == 4);
+        }
 
         private static void Initialize()
         {
@@ -147,8 +206,9 @@ namespace Runner
 
         private static IContactRepository CreateRepository()
         {
-            return new ContactRepository(config.GetConnectionString("DefaultConnection"));
-            //return new ContactRepositoryContrib(config.GetConnectionString("DefaultConnection"));
+            //return new ContactRepository(config.GetConnectionString("DefaultConnection"));
+            // return new ContactRepositoryContrib(config.GetConnectionString("DefaultConnection"));
+            return new ContactRepositorySP(config.GetConnectionString("DefaultConnection"));
         }
 
     }
