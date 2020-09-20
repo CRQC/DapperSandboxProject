@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Runner
 {
@@ -12,7 +13,7 @@ namespace Runner
     {
         private static IConfigurationRoot config;
 
-        static void Main(string[] args)
+        static void XMain(string[] args)
         {
 
             Initialize();
@@ -34,6 +35,34 @@ namespace Runner
             Get_all_should_return_6_results_with_addresses();
 
         }
+
+        /// <summary>
+        /// Async main method to illustrate async call with dapper. 
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        static async Task Main(string[] args)
+        {
+            Initialize();
+
+            await Get_all_should_return_6_results_async();
+        }
+
+        static async Task Get_all_should_return_6_results_async()
+        {
+            // arrange
+            var repository = CreateRepositoryEx();
+
+            // act
+            var contacts = await repository.GetAllAsync();
+
+            // assert
+            Console.WriteLine($"Count: {contacts.Count}");
+            Debug.Assert(contacts.Count == 11);
+            contacts.Output();
+        }
+
+
 
         static void Get_all_should_return_6_results_with_addresses()
         {

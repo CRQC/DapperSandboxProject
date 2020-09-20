@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace DataLayer
 {
@@ -16,7 +17,15 @@ namespace DataLayer
         {
             this.db = new SqlConnection(connString);
         }
-
+        /// <summary>
+        /// Using async return for the queries. 
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<Contact>> GetAllAsync()
+        {
+            var contacts = await this.db.QueryAsync<Contact>("SELECT * FROM Contacts");
+            return contacts.ToList();
+        }
 
         public List<Contact> GetAllContactsWithAddresses()
         {
